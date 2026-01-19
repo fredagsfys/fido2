@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACME Pay - Secure Payment</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hosted-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Header */
+        .hosted-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e8eaed;
+        }
+
+        .hosted-close {
+            background: none;
+            border: none;
+            padding: 8px;
+            margin: -8px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hosted-close:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .hosted-logo {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .hosted-logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #32BCAD;
+            letter-spacing: -0.5px;
+        }
+
+        .hosted-logo-sub {
+            font-size: 14px;
+            color: #5f6368;
+            font-weight: 500;
+        }
+
+        .hosted-spacer {
+            width: 40px;
+        }
+
+        /* Amount */
+        .hosted-amount {
+            text-align: center;
+            padding: 32px 16px;
+        }
+
+        .hosted-currency {
+            font-size: 28px;
+            font-weight: 400;
+            color: #202124;
+            vertical-align: top;
+        }
+
+        .hosted-value {
+            font-size: 56px;
+            font-weight: 400;
+            color: #202124;
+            letter-spacing: -1px;
+        }
+
+        .hosted-merchant {
+            text-align: center;
+            font-size: 14px;
+            color: #5f6368;
+            padding-bottom: 24px;
+        }
+
+        /* Content */
+        .hosted-content {
+            flex: 1;
+            padding: 0 16px;
+        }
+
+        /* Footer */
+        .hosted-footer {
+            padding: 16px;
+            border-top: 1px solid #e8eaed;
+        }
+
+        .hosted-pay-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 24px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .hosted-pay-btn:hover {
+            background: #1557b0;
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+        }
+
+        .hosted-pay-btn:disabled {
+            background: #c7c7cc;
+            cursor: not-allowed;
+        }
+
+        .hosted-pay-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .hosted-pay-btn.loading .spinner {
+            display: block;
+        }
+
+        .hosted-pay-btn.loading .btn-content {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hosted-secured {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        /* Order items */
+        .hosted-order-items {
+            margin-bottom: 16px;
+            border: 1px solid #e8eaed;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .hosted-order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e8eaed;
+            font-size: 14px;
+        }
+
+        .hosted-order-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Error/Success states */
+        .hosted-status {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+
+        .hosted-status.active {
+            display: block;
+        }
+
+        .hosted-status-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .hosted-status-icon.success {
+            background: #00A868;
+        }
+
+        .hosted-status-icon.error {
+            background: #ea4335;
+        }
+
+        .hosted-status-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        .hosted-status-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .hosted-status-message {
+            font-size: 16px;
+            color: #5f6368;
+        }
+
+        /* Biometric overlay styles (inline for hosted page) */
+        .hosted-biometric-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .hosted-biometric-overlay.active {
+            display: flex;
+        }
+
+        .hosted-biometric-container {
+            text-align: center;
+            color: white;
+        }
+
+        .hosted-biometric-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .hosted-fingerprint-svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .hosted-fingerprint-svg path {
+            opacity: 0.3;
+        }
+
+        .hosted-fingerprint-svg .scan-line {
+            stroke: #32BCAD;
+            stroke-width: 3;
+            opacity: 1;
+            animation: fingerprint-scan 2s ease-in-out infinite;
+        }
+
+        @keyframes fingerprint-scan {
+            0%, 100% {
+                stroke-dasharray: 0 1000;
+                stroke-dashoffset: 0;
+            }
+            50% {
+                stroke-dasharray: 200 1000;
+                stroke-dashoffset: -100;
+            }
+        }
+
+        .hosted-biometric-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140px;
+            height: 140px;
+            margin: -70px 0 0 -70px;
+            border: 3px solid rgba(50, 188, 173, 0.3);
+            border-radius: 50%;
+            animation: biometric-pulse 2s ease-out infinite;
+        }
+
+        .hosted-biometric-ring:nth-child(2) { animation-delay: 0.5s; }
+        .hosted-biometric-ring:nth-child(3) { animation-delay: 1s; }
+
+        @keyframes biometric-pulse {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .hosted-biometric-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .hosted-biometric-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
+        }
+
+        .hosted-biometric-cancel {
+            margin-top: 40px;
+            padding: 12px 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .hosted-biometric-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="hosted-container">
+        <!-- Header -->
+        <div class="hosted-header">
+            <button class="hosted-close" onclick="closePayment()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+            <div class="hosted-logo">
+                <span class="hosted-logo-text">PIX</span>
+                <span class="hosted-logo-sub">by ACME</span>
+            </div>
+            <div class="hosted-spacer"></div>
+        </div>
+
+        <!-- Amount -->
+        <div class="hosted-amount">
+            <span class="hosted-currency" id="currency">R$</span>
+            <span class="hosted-value" id="amount">0,00</span>
+        </div>
+
+        <div class="hosted-merchant" id="merchant">Merchant</div>
+
+        <!-- Content -->
+        <div class="hosted-content" id="content">
+            <!-- Order items will be injected here -->
+            <div id="orderItems" class="hosted-order-items" style="display: none;"></div>
+
+            <!-- Payment methods -->
+            <div id="paymentMethods" class="acme-payment-methods"></div>
+        </div>
+
+        <!-- Status (success/error) -->
+        <div id="statusSuccess" class="hosted-status">
+            <div class="hosted-status-icon success">
+                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+            <div class="hosted-status-title">Payment Successful!</div>
+            <div class="hosted-status-message" id="successMessage"></div>
+        </div>
+
+        <div id="statusError" class="hosted-status">
+            <div class="hosted-status-icon error">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </div>
+            <div class="hosted-status-title">Payment Failed</div>
+            <div class="hosted-status-message" id="errorMessage"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="hosted-footer">
+            <button id="payBtn" class="hosted-pay-btn" onclick="processPayment()">
+                <span class="spinner"></span>
+                <span class="btn-content">Pay with PIX</span>
+            </button>
+            <div class="hosted-secured">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#5f6368">
+                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                </svg>
+                Secured by ACME Pay
+            </div>
+        </div>
+    </div>
+
+    <!-- Biometric Overlay -->
+    <div id="biometricOverlay" class="hosted-biometric-overlay">
+        <div class="hosted-biometric-container">
+            <div class="hosted-biometric-icon">
+                <div class="hosted-biometric-ring"></div>
+                <div class="hosted-biometric-ring"></div>
+                <div class="hosted-biometric-ring"></div>
+                <svg class="hosted-fingerprint-svg" viewBox="0 0 100 100">
+                    <path d="M50 15 C25 15 15 35 15 55 C15 75 25 90 50 90 C75 90 85 75 85 55 C85 35 75 15 50 15" />
+                    <path d="M50 25 C32 25 25 40 25 55 C25 70 32 80 50 80 C68 80 75 70 75 55 C75 40 68 25 50 25" />
+                    <path d="M50 35 C40 35 35 45 35 55 C35 65 40 72 50 72 C60 72 65 65 65 55 C65 45 60 35 50 35" />
+                    <path d="M50 45 C45 45 43 50 43 55 C43 60 45 64 50 64 C55 64 57 60 57 55 C57 50 55 45 50 45" />
+                    <path class="scan-line" d="M50 15 C25 15 15 35 15 55 C15 75 25 90 50 90 C75 90 85 75 85 55 C85 35 75 15 50 15" />
+                </svg>
+            </div>
+            <div class="hosted-biometric-title">Biometric Verification</div>
+            <div class="hosted-biometric-subtitle">Touch the sensor or use Face ID</div>
+            <button class="hosted-biometric-cancel" onclick="cancelBiometric()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const config = {
+            amount: parseFloat(params.get('amount') || '0'),
+            currency: params.get('currency') || 'BRL',
+            merchantName: params.get('merchant') || 'Merchant',
+            sessionId: params.get('session') || '',
+            returnUrl: params.get('return_url') || '',
+            items: params.get('items') ? JSON.parse(decodeURIComponent(params.get('items'))) : []
+        };
+
+        let selectedPaymentMethod = 'pix';
+        let biometricReject = null;
+
+        // Initialize page
+        function init() {
+            // Set amount
+            document.getElementById('currency').textContent = config.currency === 'BRL' ? 'R$' : '$';
+            document.getElementById('amount').textContent = formatAmount(config.amount);
+            document.getElementById('merchant').textContent = config.merchantName;
+
+            // Render order items
+            if (config.items.length > 0) {
+                const itemsContainer = document.getElementById('orderItems');
+                itemsContainer.style.display = 'block';
+                itemsContainer.innerHTML = config.items.map(item => `
+                    <div class="hosted-order-item">
+                        <span>${item.emoji || ''} ${item.name}</span>
+                        <span>${formatPrice(item.price)}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Render payment methods
+            renderPaymentMethods();
+        }
+
+        function formatAmount(value) {
+            return value.toFixed(2).replace('.', ',');
+        }
+
+        function formatPrice(value) {
+            return config.currency === 'BRL'
+                ? `R$ ${value.toFixed(2).replace('.', ',')}`
+                : `$${value.toFixed(2)}`;
+        }
+
+        function renderPaymentMethods() {
+            const container = document.getElementById('paymentMethods');
+            container.innerHTML = `
+                <div class="acme-payment-method primary selected" onclick="selectPayment(this, 'pix')">
+                    <div class="acme-payment-method-icon pix">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z"/>
+                        </svg>
+                    </div>
+                    <div class="acme-payment-method-info">
+                        <div class="acme-payment-method-name">PIX by ACME<span class="acme-payment-method-badge">Instant</span></div>
+                        <div class="acme-payment-method-detail">Banco ACME **** 4521</div>
+                        <div class="acme-payment-method-balance-inline">
+                            <span class="acme-balance-dot"></span>
+                            <span class="acme-balance-text">R$ 2.847,50 available</span>
+                        </div>
+                    </div>
+                    <div class="acme-payment-method-radio">
+                        <div class="acme-payment-method-radio-inner"></div>
+                    </div>
+                </div>
+
+                <div class="acme-other-methods-divider"><span>or pay with</span></div>
+
+                <div class="acme-payment-method" onclick="selectPayment(this, 'card')">
+                    <div class="acme-payment-method-icon card">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                        </svg>
+                    </div>
+                    <div class="acme-payment-method-info">
+                        <div class="acme-payment-method-name">Credit or Debit Card</div>
+                        <div class="acme-payment-method-detail">Add a new card</div>
+                    </div>
+                    <div class="acme-payment-method-radio">
+                        <div class="acme-payment-method-radio-inner"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectPayment(element, method) {
+            document.querySelectorAll('.acme-payment-method').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedPaymentMethod = method;
+
+            const btn = document.getElementById('payBtn');
+            btn.querySelector('.btn-content').textContent = method === 'pix' ? 'Pay with PIX' : 'Pay with Card';
+        }
+
+        function showBiometricOverlay() {
+            document.getElementById('biometricOverlay').classList.add('active');
+        }
+
+        function hideBiometricOverlay() {
+            document.getElementById('biometricOverlay').classList.remove('active');
+        }
+
+        function cancelBiometric() {
+            hideBiometricOverlay();
+            if (biometricReject) {
+                biometricReject(new Error('Cancelled by user'));
+                biometricReject = null;
+            }
+        }
+
+        // WebAuthn helpers
+        function bufferToBase64url(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let str = '';
+            for (const byte of bytes) {
+                str += String.fromCharCode(byte);
+            }
+            return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+
+        function base64urlToBuffer(base64url) {
+            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            const padLen = (4 - (base64.length % 4)) % 4;
+            const padded = base64 + '='.repeat(padLen);
+            const binary = atob(padded);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        async function processPayment() {
+            if (selectedPaymentMethod !== 'pix') {
+                showError('Only PIX payments are supported in this demo.');
+                return;
+            }
+
+            const btn = document.getElementById('payBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const username = 'fredagsfys';
+
+                // Get authentication options
+                const startResponse = await fetch('/api/passkey/loginStart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!startResponse.ok) throw new Error(await startResponse.text());
+                const options = await startResponse.json();
+
+                // Prepare WebAuthn options
+                const publicKeyOptions = {
+                    challenge: base64urlToBuffer(options.publicKey.challenge),
+                    timeout: options.publicKey.timeout,
+                    rpId: options.publicKey.rpId,
+                    userVerification: 'required'
+                };
+
+                if (options.publicKey.allowCredentials) {
+                    publicKeyOptions.allowCredentials = options.publicKey.allowCredentials.map(cred => ({
+                        id: base64urlToBuffer(cred.id),
+                        type: cred.type,
+                        transports: cred.transports
+                    }));
+                }
+
+                // Show biometric overlay
+                showBiometricOverlay();
+
+                let credential;
+                try {
+                    credential = await navigator.credentials.get({ publicKey: publicKeyOptions });
+                } finally {
+                    hideBiometricOverlay();
+                }
+
+                // Verify with server
+                const credentialData = {
+                    id: credential.id,
+                    rawId: bufferToBase64url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+                        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+                        signature: bufferToBase64url(credential.response.signature),
+                        userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null
+                    }
+                };
+
+                const finishResponse = await fetch(`/api/passkey/loginFinish?username=${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentialData)
+                });
+
+                if (!finishResponse.ok) throw new Error(await finishResponse.text());
+
+                // Simulate processing
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Show success
+                showSuccess();
+
+                // Notify parent window
+                notifyParent({
+                    type: 'payment:success',
+                    payload: {
+                        transactionId: `txn_${Date.now()}`,
+                        amount: config.amount,
+                        currency: config.currency
+                    }
+                });
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError(error.message);
+                notifyParent({
+                    type: 'payment:error',
+                    payload: { message: error.message }
+                });
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        function showSuccess() {
+            document.getElementById('content').style.display = 'none';
+            document.querySelector('.hosted-footer').style.display = 'none';
+            document.getElementById('successMessage').textContent = `${formatPrice(config.amount)} paid via PIX`;
+            document.getElementById('statusSuccess').classList.add('active');
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('statusError').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('statusError').classList.remove('active');
+            }, 3000);
+        }
+
+        function closePayment() {
+            notifyParent({ type: 'payment:cancel' });
+            if (config.returnUrl) {
+                window.location.href = config.returnUrl;
+            }
+        }
+
+        function notifyParent(message) {
+            if (window.parent !== window) {
+                window.parent.postMessage(message, '*');
+            }
+        }
+
+        // Notify parent that we're ready
+        window.addEventListener('load', () => {
+            init();
+            notifyParent({ type: 'ready' });
+        });
+
+        // Listen for messages from parent
+        window.addEventListener('message', (event) => {
+            // Handle messages from parent window
+            if (event.data.type === 'config') {
+                Object.assign(config, event.data.payload);
+                init();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -38,16 +38,42 @@ func main() {
 	http.HandleFunc("/api/passkey/loginStart", beginAuthentication)
 	http.HandleFunc("/api/passkey/loginFinish", finishAuthentication)
 
-	fmt.Printf("Starting FIDO2 server on :8080")
-	http.ListenAndServe(":8080", nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	fmt.Printf("Starting FIDO2 server on :%s\n", port)
+	http.ListenAndServe(":"+port, nil)
 }
 
 func initializeWebAuthn() error {
 	var err error
+
+	// Get RP ID from environment variable, default to localhost
+	rpID := os.Getenv("RP_ID")
+	if rpID == "" {
+		rpID = "localhost"
+	}
+
+	// Get RP Origin from environment variable, default to localhost:8080
+	rpOrigin := os.Getenv("RP_ORIGIN")
+	if rpOrigin == "" {
+		rpOrigin = "http://localhost:8080"
+	}
+
+	// Support multiple origins (comma-separated)
+	origins := []string{rpOrigin}
+	// Always include localhost for local development
+	if rpOrigin != "http://localhost:8080" {
+		origins = append(origins, "http://localhost:8080")
+	}
+
+	fmt.Printf("WebAuthn Config - RP ID: %s, Origins: %v\n", rpID, origins)
+
 	webauthnInstance, err = webauthn.New(&webauthn.Config{
-		RPDisplayName: "FIDO2 Example",                   // Display name for the Relying Party
-		RPID:          "localhost",                       // Relying Party ID (domain name)
-		RPOrigins:     []string{"http://localhost:8080"}, // Relying Party Origin
+		RPDisplayName: "FIDO2 Example", // Display name for the Relying Party
+		RPID:          rpID,            // Relying Party ID (domain name)
+		RPOrigins:     origins,         // Relying Party Origins
 	})
 	return err
 }

@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Payment with Passkey Confirmation</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
+        }
+        h1 {
+            text-align: center;
+            color: #202124;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .product {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .product:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .product-icon {
+            font-size: 52px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .product-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #202124;
+            margin-bottom: 4px;
+        }
+        .product-price {
+            color: #1a73e8;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .product button {
+            width: 100%;
+            padding: 12px 16px;
+            background: #202124;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .product button:hover {
+            background: #3c4043;
+        }
+        .product button:active {
+            transform: scale(0.97);
+        }
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e8eaed;
+        }
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .section-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+        .section-icon.checkout-icon {
+            background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #202124;
+            margin: 0;
+        }
+        .cart-items {
+            margin-bottom: 16px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        .cart-item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .cart-item-name {
+            font-weight: 500;
+            color: #202124;
+            font-size: 15px;
+        }
+        .cart-item-price {
+            color: #5f6368;
+            font-size: 15px;
+            font-weight: 500;
+            margin-right: 12px;
+        }
+        .cart-item-remove {
+            background: none;
+            color: #ea4335;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .cart-item-remove:hover {
+            background: rgba(234, 67, 53, 0.1);
+        }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            padding-top: 16px;
+            margin-top: 8px;
+            border-top: 2px solid #202124;
+            color: #202124;
+        }
+        .cart-total-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .checkout-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .pay-button {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+            color: white;
+            border: none;
+            border-radius: 28px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 168, 104, 0.35);
+        }
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+        .pay-button:disabled {
+            background: #dadce0;
+            color: #9aa0a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .pay-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        .status.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            display: block;
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        .status.success {
+            text-align: center;
+            padding: 24px;
+        }
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            animation: successPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .success-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+        @keyframes successPop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .success-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #155724;
+            margin-bottom: 8px;
+        }
+        .success-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #155724;
+            margin-bottom: 8px;
+        }
+        .success-detail {
+            font-size: 14px;
+            color: #155724;
+            opacity: 0.8;
+        }
+        .empty-cart {
+            text-align: center;
+            color: #9aa0a6;
+            padding: 40px 20px;
+            font-size: 15px;
+        }
+        .empty-cart::before {
+            content: '🛒';
+            display: block;
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+            color: #1a73e8;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 0;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #1557b0;
+        }
+        .cart-item-emoji {
+            font-size: 28px;
+        }
+
+        /* Native-feel Bottom Sheet */
+        .bottom-sheet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0);
+            z-index: 1000;
+            pointer-events: none;
+            transition: background 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+        }
+        .bottom-sheet-overlay.active {
+            background: rgba(0,0,0,0.4);
+            pointer-events: auto;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 14px 14px 0 0;
+            z-index: 1001;
+            transform: translateY(100%);
+            max-height: 94vh;
+            overflow: hidden;
+            box-shadow: 0 -1px 0 rgba(0,0,0,0.05), 0 -8px 32px rgba(0,0,0,0.12);
+            will-change: transform;
+            touch-action: none;
+        }
+        .bottom-sheet.animating {
+            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+        .bottom-sheet-handle-area {
+            padding: 12px 0 8px;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .bottom-sheet-handle-area:active {
+            cursor: grabbing;
+        }
+        .bottom-sheet-handle {
+            width: 36px;
+            height: 5px;
+            background: rgba(60, 60, 67, 0.3);
+            border-radius: 100px;
+            margin: 0 auto;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .bottom-sheet.dragging .bottom-sheet-handle {
+            transform: scaleX(1.2);
+            background: rgba(60, 60, 67, 0.5);
+        }
+        .bottom-sheet-scroll {
+            max-height: calc(94vh - 30px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* iOS Style Header */
+        .bottom-sheet-header {
+            padding: 10px 16px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f2f2f7;
+        }
+        .bottom-sheet-header h3 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 400;
+            color: #8e8e93;
+            text-transform: uppercase;
+            letter-spacing: -0.08px;
+        }
+        .bottom-sheet-close {
+            background: rgba(60, 60, 67, 0.1);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 20px;
+            color: #8e8e93;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .bottom-sheet-close:hover {
+            background: rgba(60, 60, 67, 0.15);
+        }
+        .bottom-sheet-content {
+            padding: 0 16px 34px;
+        }
+
+        /* iOS Card Style */
+        .ios-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        /* Payment Amount Header */
+        .payment-header {
+            text-align: center;
+            padding: 20px 16px;
+        }
+        .payment-merchant {
+            font-size: 13px;
+            color: #8e8e93;
+            margin-bottom: 4px;
+        }
+        .payment-amount {
+            font-size: 48px;
+            font-weight: 700;
+            color: #000;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+        .payment-label {
+            font-size: 15px;
+            color: #8e8e93;
+        }
+
+        /* iOS List Items */
+        .ios-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 0.5px solid rgba(60, 60, 67, 0.1);
+        }
+        .ios-list-item:last-child {
+            border-bottom: none;
+        }
+        .ios-list-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        .ios-list-icon.passkey {
+            background: linear-gradient(180deg, #5AC8FA 0%, #007AFF 100%);
+        }
+        .ios-list-icon.pix {
+            background: linear-gradient(180deg, #32BCAD 0%, #00A868 100%);
+        }
+        .ios-list-icon.card {
+            background: linear-gradient(180deg, #FF9500 0%, #FF3B30 100%);
+        }
+        .ios-list-content {
+            flex: 1;
+        }
+        .ios-list-title {
+            font-size: 17px;
+            font-weight: 400;
+            color: #000;
+            letter-spacing: -0.41px;
+        }
+        .ios-list-subtitle {
+            font-size: 13px;
+            color: #8e8e93;
+            margin-top: 1px;
+        }
+        .ios-list-accessory {
+            color: #007AFF;
+            font-size: 17px;
+        }
+        .ios-checkmark {
+            width: 22px;
+            height: 22px;
+            background: #007AFF;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ios-checkmark svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            padding: 0;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 11px 16px;
+            border-bottom: 0.5px solid rgba(60, 60, 67, 0.1);
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-item-name {
+            font-size: 17px;
+            color: #000;
+        }
+        .order-item-price {
+            font-size: 17px;
+            color: #8e8e93;
+        }
+
+        /* Section Header */
+        .section-header {
+            font-size: 13px;
+            font-weight: 400;
+            color: #8e8e93;
+            text-transform: uppercase;
+            letter-spacing: -0.08px;
+            padding: 24px 16px 8px;
+        }
+
+        /* Pay Button - Apple Style */
+        .apple-pay-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 20px;
+            font-weight: 600;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.45px;
+            transition: opacity 0.2s;
+        }
+        .apple-pay-btn.pix-btn {
+            background: linear-gradient(180deg, #32BCAD 0%, #00A868 100%);
+        }
+        .apple-pay-btn:hover {
+            opacity: 0.85;
+        }
+        .apple-pay-btn:active {
+            opacity: 0.7;
+        }
+        .apple-pay-btn:disabled {
+            background: #c7c7cc;
+            cursor: not-allowed;
+        }
+        .apple-pay-btn .fingerprint-icon,
+        .apple-pay-btn .pix-btn-icon {
+            width: 24px;
+            height: 24px;
+        }
+        .apple-pay-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .apple-pay-btn.loading .spinner {
+            display: block;
+        }
+        .apple-pay-btn.loading .btn-content {
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Passkey Account - iOS Style */
+        .passkey-account-ios {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 0.5px solid rgba(60, 60, 67, 0.1);
+        }
+        .account-avatar-ios {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(180deg, #5856D6 0%, #AF52DE 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            margin-right: 12px;
+        }
+        .account-info-ios {
+            flex: 1;
+        }
+        .account-name-ios {
+            font-size: 17px;
+            font-weight: 400;
+            color: #000;
+        }
+        .account-detail-ios {
+            font-size: 13px;
+            color: #8e8e93;
+            margin-top: 1px;
+        }
+
+        /* Google Pay Style Sheet */
+        .gpay-sheet {
+            background: white;
+            padding: 0;
+        }
+        .gpay-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 16px 8px;
+        }
+        .gpay-close {
+            background: none;
+            border: none;
+            padding: 8px;
+            margin: -8px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gpay-close:hover {
+            background: rgba(0,0,0,0.04);
+        }
+        .gpay-logo {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .gpay-logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #32BCAD;
+            letter-spacing: -0.5px;
+        }
+        .gpay-logo-sub {
+            font-size: 14px;
+            color: #5f6368;
+            font-weight: 500;
+        }
+        .gpay-spacer {
+            width: 40px;
+        }
+        .gpay-amount {
+            text-align: center;
+            padding: 16px 16px 24px;
+        }
+        .gpay-currency {
+            font-size: 24px;
+            font-weight: 400;
+            color: #202124;
+            vertical-align: top;
+        }
+        .gpay-value {
+            font-size: 48px;
+            font-weight: 400;
+            color: #202124;
+            letter-spacing: -1px;
+        }
+        .gpay-merchant {
+            text-align: center;
+            font-size: 14px;
+            color: #5f6368;
+            padding-bottom: 24px;
+        }
+        .gpay-card {
+            display: flex;
+            align-items: center;
+            margin: 0 16px 16px;
+            padding: 16px;
+            background: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        .gpay-card-icon {
+            margin-right: 16px;
+        }
+        .bank-logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gpay-card-info {
+            flex: 1;
+        }
+        .gpay-card-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .gpay-card-number {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .gpay-card-balance {
+            text-align: right;
+        }
+        .balance-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+        .balance-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .gpay-items {
+            margin: 0 16px 16px;
+            border: 1px solid #e8eaed;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .gpay-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e8eaed;
+            font-size: 14px;
+        }
+        .gpay-item:last-child {
+            border-bottom: none;
+        }
+        .gpay-item-name {
+            color: #202124;
+        }
+        .gpay-item-price {
+            color: #5f6368;
+        }
+        .gpay-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: calc(100% - 32px);
+            margin: 8px 16px 16px;
+            padding: 14px 24px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .gpay-btn:hover {
+            background: #1557b0;
+            box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+        }
+        .gpay-btn:active {
+            background: #104a9e;
+        }
+        .gpay-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .gpay-btn.loading .spinner {
+            display: block;
+        }
+        .gpay-btn.loading .btn-content {
+            display: none;
+        }
+        .gpay-btn-icon {
+            width: 20px;
+            height: 20px;
+        }
+        .gpay-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px 24px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        /* Payment Method Selection */
+        .payment-methods {
+            margin: 0 16px 16px;
+        }
+        .payment-methods-header {
+            font-size: 12px;
+            font-weight: 500;
+            color: #5f6368;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 0 8px;
+        }
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background: white;
+            border: 2px solid #e8eaed;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .payment-method:hover {
+            background: #f8f9fa;
+        }
+        .payment-method.selected {
+            border-color: #1a73e8;
+            background: #e8f0fe;
+        }
+        .payment-method-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        .payment-method-icon.pix {
+            background: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+        }
+        .payment-method-icon.card {
+            background: linear-gradient(135deg, #5C6BC0 0%, #3949AB 100%);
+        }
+        .payment-method-icon.klarna {
+            background: #FFB3C7;
+        }
+        .payment-method-info {
+            flex: 1;
+        }
+        .payment-method-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #202124;
+        }
+        .payment-method-detail {
+            font-size: 13px;
+            color: #5f6368;
+            margin-top: 2px;
+        }
+        .payment-method-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #dadce0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.2s;
+        }
+        .payment-method.selected .payment-method-radio {
+            border-color: #1a73e8;
+        }
+        .payment-method-radio-inner {
+            width: 10px;
+            height: 10px;
+            background: #1a73e8;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.2s;
+        }
+        .payment-method.selected .payment-method-radio-inner {
+            transform: scale(1);
+        }
+        .klarna-logo {
+            font-weight: 800;
+            font-size: 16px;
+            color: #0A0B09;
+        }
+        .payment-method-balance-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            background: rgba(0, 168, 104, 0.1);
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+        .balance-dot {
+            width: 8px;
+            height: 8px;
+            background: #00A868;
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .balance-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00875a;
+        }
+
+        /* Primary payment method (PIX) */
+        .payment-method.primary {
+            border: 2px solid #32BCAD;
+            background: linear-gradient(135deg, rgba(50, 188, 173, 0.08) 0%, rgba(0, 168, 104, 0.08) 100%);
+            margin-bottom: 16px;
+        }
+        .payment-method.primary.selected {
+            border-color: #00A868;
+            background: linear-gradient(135deg, rgba(50, 188, 173, 0.15) 0%, rgba(0, 168, 104, 0.15) 100%);
+        }
+        .payment-method.primary .payment-method-radio {
+            border-color: #32BCAD;
+        }
+        .payment-method.primary.selected .payment-method-radio {
+            border-color: #00A868;
+        }
+        .payment-method.primary .payment-method-radio-inner {
+            background: #00A868;
+        }
+        .payment-method-badge {
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+            background: #00A868;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .other-methods-divider {
+            display: flex;
+            align-items: center;
+            margin: 8px 0 12px;
+            color: #9aa0a6;
+            font-size: 12px;
+        }
+        .other-methods-divider::before,
+        .other-methods-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e8eaed;
+        }
+        .other-methods-divider span {
+            padding: 0 12px;
+        }
+
+        /* Biometric Authentication Overlay */
+        .biometric-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .biometric-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .biometric-container {
+            text-align: center;
+            color: white;
+        }
+        .biometric-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+        .fingerprint-svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+        .fingerprint-svg path {
+            opacity: 0.3;
+        }
+        .fingerprint-svg .scan-line {
+            stroke: #32BCAD;
+            stroke-width: 3;
+            opacity: 1;
+            animation: fingerprint-scan 2s ease-in-out infinite;
+        }
+        @keyframes fingerprint-scan {
+            0%, 100% {
+                stroke-dasharray: 0 1000;
+                stroke-dashoffset: 0;
+            }
+            50% {
+                stroke-dasharray: 200 1000;
+                stroke-dashoffset: -100;
+            }
+        }
+        .biometric-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140px;
+            height: 140px;
+            margin: -70px 0 0 -70px;
+            border: 3px solid rgba(50, 188, 173, 0.3);
+            border-radius: 50%;
+            animation: biometric-pulse 2s ease-out infinite;
+        }
+        .biometric-ring:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        .biometric-ring:nth-child(3) {
+            animation-delay: 1s;
+        }
+        @keyframes biometric-pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        .biometric-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        .biometric-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
+        }
+        .biometric-hint {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .biometric-hint svg {
+            width: 20px;
+            height: 20px;
+            fill: rgba(255, 255, 255, 0.5);
+        }
+        .biometric-cancel {
+            margin-top: 40px;
+            padding: 12px 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .biometric-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .face-id-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .face-id-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: white;
+            stroke-width: 2.5;
+            fill: none;
+        }
+        .face-id-icon .scanning {
+            animation: face-scan 1.5s ease-in-out infinite;
+        }
+        @keyframes face-scan {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .products {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .product {
+                padding: 15px;
+            }
+            .product-icon {
+                font-size: 36px;
+            }
+            .bottom-sheet {
+                max-height: 95vh;
+            }
+        }
+
+        /* Enrollment Overlay */
+        .enrollment-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+        .enrollment-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .enrollment-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideUp {
+            0% { transform: translateY(40px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .enrollment-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .enrollment-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+        .enrollment-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #202124;
+            margin-bottom: 8px;
+        }
+        .enrollment-subtitle {
+            font-size: 15px;
+            color: #5f6368;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .enrollment-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            border: 2px solid #e8eaed;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .enrollment-input:focus {
+            border-color: #32BCAD;
+        }
+        .enrollment-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .enrollment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 168, 104, 0.35);
+        }
+        .enrollment-btn:disabled {
+            background: #dadce0;
+            color: #9aa0a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .enrollment-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .enrollment-btn.loading .spinner {
+            display: block;
+        }
+        .enrollment-btn.loading .btn-text {
+            display: none;
+        }
+        .enrollment-cancel {
+            background: none;
+            border: none;
+            color: #5f6368;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 16px;
+        }
+        .enrollment-cancel:hover {
+            color: #202124;
+        }
+        .enrollment-features {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e8eaed;
+        }
+        .enrollment-feature {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+        .enrollment-feature svg {
+            width: 16px;
+            height: 16px;
+            fill: #32BCAD;
+        }
+        .enrollment-error {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+        .enrollment-error.show {
+            display: block;
+        }
+        .enrollment-success-icon {
+            width: 80px;
+            height: 80px;
+            background: #00A868;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: successPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .enrollment-success-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="nav-link">&larr; Back to Passkey Registration</a>
+
+    <div class="products">
+        <div class="product">
+            <div class="product-icon">💻</div>
+            <div class="product-name">Laptop Pro</div>
+            <div class="product-price">$999.00</div>
+            <button onclick="addToCart('Laptop Pro', 999)">Add to Cart</button>
+        </div>
+        <div class="product">
+            <div class="product-icon">📱</div>
+            <div class="product-name">Smartphone X</div>
+            <div class="product-price">$699.00</div>
+            <button onclick="addToCart('Smartphone X', 699)">Add to Cart</button>
+        </div>
+        <div class="product">
+            <div class="product-icon">🎧</div>
+            <div class="product-name">Wireless Headphones</div>
+            <div class="product-price">$199.00</div>
+            <button onclick="addToCart('Wireless Headphones', 199)">Add to Cart</button>
+        </div>
+        <div class="product">
+            <div class="product-icon">⌚</div>
+            <div class="product-name">Smart Watch</div>
+            <div class="product-price">$349.00</div>
+            <button onclick="addToCart('Smart Watch', 349)">Add to Cart</button>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon">
+                <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            </div>
+            <h2 class="section-title">Shopping Cart</h2>
+        </div>
+        <div id="cartItems" class="cart-items">
+            <div class="empty-cart">Your cart is empty</div>
+        </div>
+        <div id="cartTotal" class="cart-total" style="display: none;">
+            <span>Total</span>
+            <span id="totalAmount" class="cart-total-amount">$0.00</span>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon checkout-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <h2 class="section-title">Secure Checkout</h2>
+        </div>
+        <button id="payButton" class="pay-button" onclick="openPaymentSheet()" disabled>
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            Proceed to Checkout
+        </button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <!-- Biometric Authentication Overlay -->
+    <div id="biometricOverlay" class="biometric-overlay">
+        <div class="biometric-container">
+            <div class="biometric-icon">
+                <div class="biometric-ring"></div>
+                <div class="biometric-ring"></div>
+                <div class="biometric-ring"></div>
+                <svg class="fingerprint-svg" viewBox="0 0 100 100">
+                    <!-- Fingerprint paths -->
+                    <path d="M50 15 C25 15 15 35 15 55 C15 75 25 90 50 90 C75 90 85 75 85 55 C85 35 75 15 50 15" />
+                    <path d="M50 25 C32 25 25 40 25 55 C25 70 32 80 50 80 C68 80 75 70 75 55 C75 40 68 25 50 25" />
+                    <path d="M50 35 C40 35 35 45 35 55 C35 65 40 72 50 72 C60 72 65 65 65 55 C65 45 60 35 50 35" />
+                    <path d="M50 45 C45 45 43 50 43 55 C43 60 45 64 50 64 C55 64 57 60 57 55 C57 50 55 45 50 45" />
+                    <!-- Scan highlight -->
+                    <path class="scan-line" d="M50 15 C25 15 15 35 15 55 C15 75 25 90 50 90 C75 90 85 75 85 55 C85 35 75 15 50 15" />
+                </svg>
+            </div>
+            <div class="biometric-title">Verificação Biométrica</div>
+            <div class="biometric-subtitle">Toque no sensor ou use Face ID</div>
+            <div class="biometric-hint">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                </svg>
+                Autenticação segura via FIDO2
+            </div>
+            <button class="biometric-cancel" onclick="cancelBiometric()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Enrollment Overlay -->
+    <div id="enrollmentOverlay" class="enrollment-overlay">
+        <div class="enrollment-card" id="enrollmentCard">
+            <div class="enrollment-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                </svg>
+            </div>
+            <div class="enrollment-title">Set Up Passkey</div>
+            <div class="enrollment-subtitle">Create a passkey to securely confirm payments with your fingerprint or face</div>
+            <div id="enrollmentError" class="enrollment-error"></div>
+            <input type="text" id="enrollmentUsername" class="enrollment-input" placeholder="Choose a username" autocomplete="username">
+            <button id="enrollmentBtn" class="enrollment-btn" onclick="startEnrollment()">
+                <span class="spinner"></span>
+                <span class="btn-text">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-1.43-2.01-2.64-.69-1.23-1.05-2.73-1.05-4.34 0-2.97 2.54-5.39 5.66-5.39s5.66 2.42 5.66 5.39c0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-2.42-2.09-4.39-4.66-4.39-2.57 0-4.66 1.97-4.66 4.39 0 1.44.32 2.77.93 3.85.64 1.15 1.08 1.64 1.85 2.42.19.2.19.51 0 .71-.11.1-.24.15-.37.15zm7.17-1.85c-1.19 0-2.24-.3-3.1-.89-1.49-1.01-2.38-2.65-2.38-4.39 0-.28.22-.5.5-.5s.5.22.5.5c0 1.41.72 2.74 1.94 3.56.71.48 1.54.71 2.54.71.24 0 .64-.03 1.04-.1.27-.05.53.13.58.41.05.27-.13.53-.41.58-.57.11-1.07.12-1.21.12zM14.91 22c-.04 0-.09-.01-.13-.02-1.59-.44-2.63-1.03-3.72-2.1-1.4-1.39-2.17-3.24-2.17-5.22 0-1.62 1.38-2.94 3.08-2.94 1.7 0 3.08 1.32 3.08 2.94 0 1.07.93 1.94 2.08 1.94s2.08-.87 2.08-1.94c0-3.77-3.25-6.83-7.25-6.83-2.84 0-5.44 1.58-6.61 4.03-.39.81-.59 1.76-.59 2.8 0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-1.22.25-2.28.68-3.11 1.52-3.04 4.63-4.72 8.04-4.72 4.54 0 8.25 3.51 8.25 7.83 0 1.62-1.38 2.94-3.08 2.94s-3.08-1.32-3.08-2.94c0-1.07-.93-1.94-2.08-1.94s-2.08.87-2.08 1.94c0 1.71.66 3.31 1.87 4.51.95.94 1.86 1.46 3.27 1.85.27.07.42.35.35.61-.05.23-.26.38-.47.38z"/>
+                    </svg>
+                    Create Passkey
+                </span>
+            </button>
+            <button class="enrollment-cancel" onclick="closeEnrollment()">Cancel</button>
+            <div class="enrollment-features">
+                <div class="enrollment-feature">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    Secure
+                </div>
+                <div class="enrollment-feature">
+                    <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                    Fast
+                </div>
+                <div class="enrollment-feature">
+                    <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+                    Private
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet Overlay -->
+    <div id="bottomSheetOverlay" class="bottom-sheet-overlay" onclick="closePaymentSheet()"></div>
+
+    <!-- Bottom Sheet - Google Pay Style -->
+    <div id="bottomSheet" class="bottom-sheet">
+        <div class="bottom-sheet-handle-area" id="sheetHandle">
+            <div class="bottom-sheet-handle"></div>
+        </div>
+        <div class="bottom-sheet-scroll">
+        <div class="gpay-sheet">
+            <!-- Header with close -->
+            <div class="gpay-header">
+                <button class="gpay-close" onclick="closePaymentSheet()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <div class="gpay-logo">
+                    <span class="gpay-logo-text">PIX</span>
+                    <span class="gpay-logo-sub">by ACME</span>
+                </div>
+                <div class="gpay-spacer"></div>
+            </div>
+
+            <!-- Amount -->
+            <div class="gpay-amount">
+                <span class="gpay-currency">R$</span>
+                <span class="gpay-value" id="sheetTotal">0,00</span>
+            </div>
+            <!-- Payment Methods -->
+            <div class="payment-methods">
+                <!-- PIX Option - Primary -->
+                <div class="payment-method primary selected" onclick="selectPayment(this, 'pix')">
+                    <div class="payment-method-icon pix">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z"/>
+                        </svg>
+                    </div>
+                    <div class="payment-method-info">
+                        <div class="payment-method-name">PIX by ACME<span class="payment-method-badge">Instant</span></div>
+                        <div class="payment-method-detail">Banco ACME •••• 4521</div>
+                        <div class="payment-method-balance-inline">
+                            <span class="balance-dot"></span>
+                            <span class="balance-text">R$ 2.847,50 available</span>
+                        </div>
+                    </div>
+                    <div class="payment-method-radio">
+                        <div class="payment-method-radio-inner"></div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="other-methods-divider">
+                    <span>or pay with</span>
+                </div>
+
+                <!-- Card Option -->
+                <div class="payment-method" onclick="selectPayment(this, 'card')">
+                    <div class="payment-method-icon card">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                        </svg>
+                    </div>
+                    <div class="payment-method-info">
+                        <div class="payment-method-name">Credit or Debit Card</div>
+                        <div class="payment-method-detail">Add a new card</div>
+                    </div>
+                    <div class="payment-method-radio">
+                        <div class="payment-method-radio-inner"></div>
+                    </div>
+                </div>
+
+                <!-- Klarna Option -->
+                <div class="payment-method" onclick="selectPayment(this, 'klarna')">
+                    <div class="payment-method-icon klarna">
+                        <span class="klarna-logo">K</span>
+                    </div>
+                    <div class="payment-method-info">
+                        <div class="payment-method-name">Klarna</div>
+                        <div class="payment-method-detail">Pay in 4 interest-free payments</div>
+                    </div>
+                    <div class="payment-method-radio">
+                        <div class="payment-method-radio-inner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pay Button -->
+            <button id="confirmPaymentBtn" class="gpay-btn" onclick="processPayment()">
+                <span class="spinner"></span>
+                <span class="btn-content">
+                    Pay with PIX
+                </span>
+            </button>
+
+        </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        // Load saved passkey account from localStorage, or use default
+        let PASSKEY_ACCOUNT = localStorage.getItem('passkeyAccount') || '';
+        let cart = [];
+        let currentUser = null;
+        let selectedPaymentMethod = 'pix';
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function showSuccessMessage(amount, itemCount, items) {
+            const status = document.getElementById('status');
+            status.innerHTML = `
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                </div>
+                <div class="success-title">Payment Successful!</div>
+                <div class="success-amount">R$ ${formatBRL(amount)}</div>
+                <div class="success-detail">${itemCount} item${itemCount > 1 ? 's' : ''} purchased via PIX</div>
+                <div class="success-detail" style="margin-top: 4px; opacity: 0.6;">${items}</div>
+            `;
+            status.className = 'status success';
+        }
+
+        function bufferToBase64url(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let str = '';
+            for (const byte of bytes) {
+                str += String.fromCharCode(byte);
+            }
+            return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+
+        function base64urlToBuffer(base64url) {
+            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            const padLen = (4 - (base64.length % 4)) % 4;
+            const padded = base64 + '='.repeat(padLen);
+            const binary = atob(padded);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function addToCart(name, price) {
+            cart.push({ name, price, id: Date.now() });
+            renderCart();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const totalAmount = document.getElementById('totalAmount');
+            const payButton = document.getElementById('payButton');
+
+            const productEmojis = {
+                'Laptop Pro': '💻',
+                'Smartphone X': '📱',
+                'Wireless Headphones': '🎧',
+                'Smart Watch': '⌚'
+            };
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
+                cartTotal.style.display = 'none';
+                payButton.disabled = true;
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <span class="cart-item-emoji">${productEmojis[item.name] || '📦'}</span>
+                            <span class="cart-item-name">${item.name}</span>
+                        </div>
+                        <span class="cart-item-price">$${item.price.toFixed(2)}</span>
+                        <button class="cart-item-remove" onclick="removeFromCart(${item.id})">Remove</button>
+                    </div>
+                `).join('');
+
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                totalAmount.textContent = '$' + total.toFixed(2);
+                cartTotal.style.display = 'flex';
+                payButton.disabled = false;
+            }
+        }
+
+        function getTotal() {
+            return cart.reduce((sum, item) => sum + item.price, 0);
+        }
+
+        function formatBRL(value) {
+            return value.toFixed(2).replace('.', ',');
+        }
+
+        function openPaymentSheet() {
+            if (cart.length === 0) {
+                showStatus('Your cart is empty', 'error');
+                return;
+            }
+
+            // Reset payment method to PIX
+            selectedPaymentMethod = 'pix';
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector('.payment-method.primary').classList.add('selected');
+            document.querySelector('#confirmPaymentBtn .btn-content').textContent = 'Pay with PIX';
+
+            document.getElementById('sheetTotal').textContent = formatBRL(getTotal());
+
+            // Show bottom sheet
+            document.getElementById('bottomSheetOverlay').classList.add('active');
+            document.getElementById('bottomSheet').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePaymentSheet() {
+            document.getElementById('bottomSheetOverlay').classList.remove('active');
+            document.getElementById('bottomSheet').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function selectPaymentMethod(element, method) {
+            selectedPaymentMethod = method;
+            // For iOS style, we just keep passkey selected
+        }
+
+        function selectPayment(element, method) {
+            // Remove selected from all
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            // Add selected to clicked
+            element.classList.add('selected');
+            selectedPaymentMethod = method;
+
+            // Update button text based on selection
+            const btn = document.getElementById('confirmPaymentBtn');
+            const btnContent = btn.querySelector('.btn-content');
+            if (method === 'pix') {
+                btnContent.textContent = 'Pay with PIX';
+            } else if (method === 'card') {
+                btnContent.textContent = 'Pay with Card';
+            } else if (method === 'klarna') {
+                btnContent.textContent = 'Pay with Klarna';
+            }
+        }
+
+        // Enrollment overlay functions
+        let enrollmentResolve = null;
+        let enrollmentReject = null;
+
+        function showEnrollmentOverlay() {
+            const overlay = document.getElementById('enrollmentOverlay');
+            const input = document.getElementById('enrollmentUsername');
+            const error = document.getElementById('enrollmentError');
+
+            // Reset state
+            input.value = '';
+            error.classList.remove('show');
+            error.textContent = '';
+
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                overlay.classList.add('active');
+                input.focus();
+            });
+        }
+
+        function closeEnrollment() {
+            const overlay = document.getElementById('enrollmentOverlay');
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+
+            if (enrollmentReject) {
+                enrollmentReject(new Error('Enrollment cancelled'));
+                enrollmentReject = null;
+                enrollmentResolve = null;
+            }
+        }
+
+        function showEnrollmentError(message) {
+            const error = document.getElementById('enrollmentError');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        async function startEnrollment() {
+            const btn = document.getElementById('enrollmentBtn');
+            const input = document.getElementById('enrollmentUsername');
+            const username = input.value.trim();
+
+            if (!username) {
+                showEnrollmentError('Please enter a username');
+                input.focus();
+                return;
+            }
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                // Step 1: Get registration options from server
+                const startResponse = await fetch(`${API_BASE}/api/passkey/registerStart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!startResponse.ok) {
+                    throw new Error(await startResponse.text());
+                }
+
+                const options = await startResponse.json();
+
+                // Step 2: Create credential
+                const publicKeyOptions = {
+                    challenge: base64urlToBuffer(options.publicKey.challenge),
+                    rp: options.publicKey.rp,
+                    user: {
+                        id: base64urlToBuffer(options.publicKey.user.id),
+                        name: options.publicKey.user.name,
+                        displayName: options.publicKey.user.displayName
+                    },
+                    pubKeyCredParams: options.publicKey.pubKeyCredParams,
+                    timeout: options.publicKey.timeout,
+                    authenticatorSelection: options.publicKey.authenticatorSelection || {
+                        authenticatorAttachment: 'platform',
+                        userVerification: 'required'
+                    }
+                };
+
+                const credential = await navigator.credentials.create({ publicKey: publicKeyOptions });
+
+                // Step 3: Send credential to server
+                const credentialData = {
+                    id: credential.id,
+                    rawId: bufferToBase64url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        attestationObject: bufferToBase64url(credential.response.attestationObject),
+                        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON)
+                    }
+                };
+
+                const finishResponse = await fetch(`${API_BASE}/api/passkey/registerFinish?username=${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentialData)
+                });
+
+                if (!finishResponse.ok) {
+                    throw new Error(await finishResponse.text());
+                }
+
+                // Success! Update the PASSKEY_ACCOUNT and save to localStorage
+                PASSKEY_ACCOUNT = username;
+                currentUser = username;
+                localStorage.setItem('passkeyAccount', username);
+
+                // Show success state briefly
+                const card = document.getElementById('enrollmentCard');
+                card.innerHTML = `
+                    <div class="enrollment-success-icon">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <div class="enrollment-title">Passkey Created!</div>
+                    <div class="enrollment-subtitle">You can now use your fingerprint or face to confirm payments</div>
+                `;
+
+                // Close after showing success
+                setTimeout(() => {
+                    const overlay = document.getElementById('enrollmentOverlay');
+                    overlay.classList.remove('active');
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        // Reset the card HTML for next time
+                        resetEnrollmentCard();
+                    }, 300);
+
+                    if (enrollmentResolve) {
+                        enrollmentResolve(username);
+                        enrollmentResolve = null;
+                        enrollmentReject = null;
+                    }
+                }, 1500);
+
+            } catch (error) {
+                console.error('Enrollment error:', error);
+                if (error.name === 'NotAllowedError') {
+                    showEnrollmentError('Passkey creation was cancelled');
+                } else {
+                    showEnrollmentError(error.message || 'Failed to create passkey');
+                }
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        function resetEnrollmentCard() {
+            document.getElementById('enrollmentCard').innerHTML = `
+                <div class="enrollment-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                </div>
+                <div class="enrollment-title">Set Up Passkey</div>
+                <div class="enrollment-subtitle">Create a passkey to securely confirm payments with your fingerprint or face</div>
+                <div id="enrollmentError" class="enrollment-error"></div>
+                <input type="text" id="enrollmentUsername" class="enrollment-input" placeholder="Choose a username" autocomplete="username">
+                <button id="enrollmentBtn" class="enrollment-btn" onclick="startEnrollment()">
+                    <span class="spinner"></span>
+                    <span class="btn-text">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-1.43-2.01-2.64-.69-1.23-1.05-2.73-1.05-4.34 0-2.97 2.54-5.39 5.66-5.39s5.66 2.42 5.66 5.39c0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-2.42-2.09-4.39-4.66-4.39-2.57 0-4.66 1.97-4.66 4.39 0 1.44.32 2.77.93 3.85.64 1.15 1.08 1.64 1.85 2.42.19.2.19.51 0 .71-.11.1-.24.15-.37.15zm7.17-1.85c-1.19 0-2.24-.3-3.1-.89-1.49-1.01-2.38-2.65-2.38-4.39 0-.28.22-.5.5-.5s.5.22.5.5c0 1.41.72 2.74 1.94 3.56.71.48 1.54.71 2.54.71.24 0 .64-.03 1.04-.1.27-.05.53.13.58.41.05.27-.13.53-.41.58-.57.11-1.07.12-1.21.12zM14.91 22c-.04 0-.09-.01-.13-.02-1.59-.44-2.63-1.03-3.72-2.1-1.4-1.39-2.17-3.24-2.17-5.22 0-1.62 1.38-2.94 3.08-2.94 1.7 0 3.08 1.32 3.08 2.94 0 1.07.93 1.94 2.08 1.94s2.08-.87 2.08-1.94c0-3.77-3.25-6.83-7.25-6.83-2.84 0-5.44 1.58-6.61 4.03-.39.81-.59 1.76-.59 2.8 0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-1.22.25-2.28.68-3.11 1.52-3.04 4.63-4.72 8.04-4.72 4.54 0 8.25 3.51 8.25 7.83 0 1.62-1.38 2.94-3.08 2.94s-3.08-1.32-3.08-2.94c0-1.07-.93-1.94-2.08-1.94s-2.08.87-2.08 1.94c0 1.71.66 3.31 1.87 4.51.95.94 1.86 1.46 3.27 1.85.27.07.42.35.35.61-.05.23-.26.38-.47.38z"/>
+                        </svg>
+                        Create Passkey
+                    </span>
+                </button>
+                <button class="enrollment-cancel" onclick="closeEnrollment()">Cancel</button>
+                <div class="enrollment-features">
+                    <div class="enrollment-feature">
+                        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                        Secure
+                    </div>
+                    <div class="enrollment-feature">
+                        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                        Fast
+                    </div>
+                    <div class="enrollment-feature">
+                        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+                        Private
+                    </div>
+                </div>
+            `;
+        }
+
+        async function enrollAndPay() {
+            return new Promise((resolve, reject) => {
+                enrollmentResolve = resolve;
+                enrollmentReject = reject;
+                showEnrollmentOverlay();
+            });
+        }
+
+        // Biometric overlay functions
+        let biometricReject = null;
+
+        function showBiometricOverlay() {
+            const overlay = document.getElementById('biometricOverlay');
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                overlay.classList.add('active');
+            });
+        }
+
+        function hideBiometricOverlay() {
+            const overlay = document.getElementById('biometricOverlay');
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        }
+
+        function cancelBiometric() {
+            hideBiometricOverlay();
+            if (biometricReject) {
+                biometricReject(new Error('Cancelled by user'));
+                biometricReject = null;
+            }
+        }
+
+        async function processPayment() {
+            if (selectedPaymentMethod === 'pix') {
+                await confirmWithPasskey();
+            } else if (selectedPaymentMethod === 'card') {
+                closePaymentSheet();
+                showStatus('Card payment not implemented in this demo. Please use PIX.', 'info');
+            } else if (selectedPaymentMethod === 'klarna') {
+                closePaymentSheet();
+                showStatus('Klarna payment not implemented in this demo. Please use PIX.', 'info');
+            }
+        }
+
+        function showLoginPrompt() {
+            const username = prompt('Enter your username:');
+            if (username) {
+                document.getElementById('username').value = username;
+                loginWithPasskey(username);
+            }
+        }
+
+        async function loginWithPasskey(username) {
+            try {
+                showStatus('Authenticating...', 'info');
+
+                const startResponse = await fetch(`${API_BASE}/api/passkey/loginStart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!startResponse.ok) {
+                    throw new Error(await startResponse.text());
+                }
+
+                const options = await startResponse.json();
+
+                const publicKeyOptions = {
+                    challenge: base64urlToBuffer(options.publicKey.challenge),
+                    timeout: options.publicKey.timeout,
+                    rpId: options.publicKey.rpId,
+                    userVerification: options.publicKey.userVerification || 'preferred'
+                };
+
+                if (options.publicKey.allowCredentials) {
+                    publicKeyOptions.allowCredentials = options.publicKey.allowCredentials.map(cred => ({
+                        id: base64urlToBuffer(cred.id),
+                        type: cred.type,
+                        transports: cred.transports
+                    }));
+                }
+
+                const credential = await navigator.credentials.get({ publicKey: publicKeyOptions });
+
+                const credentialData = {
+                    id: credential.id,
+                    rawId: bufferToBase64url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+                        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+                        signature: bufferToBase64url(credential.response.signature),
+                        userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null
+                    }
+                };
+
+                const finishResponse = await fetch(`${API_BASE}/api/passkey/loginFinish?username=${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentialData)
+                });
+
+                if (!finishResponse.ok) {
+                    throw new Error(await finishResponse.text());
+                }
+
+                currentUser = username;
+                showStatus('Logged in successfully!', 'success');
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showStatus('Login failed: ' + error.message, 'error');
+            }
+        }
+
+        async function confirmWithPasskey() {
+            let username = PASSKEY_ACCOUNT;
+            const total = getTotal();
+            const btn = document.getElementById('confirmPaymentBtn');
+
+            // If no passkey account is saved, show enrollment first
+            if (!username) {
+                closePaymentSheet();
+                try {
+                    username = await enrollAndPay();
+                    openPaymentSheet();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    return confirmWithPasskey();
+                } catch (enrollError) {
+                    if (enrollError.message !== 'Enrollment cancelled') {
+                        showStatus('Failed to set up passkey: ' + enrollError.message, 'error');
+                    }
+                    return;
+                }
+            }
+
+            try {
+                btn.classList.add('loading');
+                btn.disabled = true;
+
+                // Step 1: Get authentication challenge from server
+                const startResponse = await fetch(`${API_BASE}/api/passkey/loginStart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!startResponse.ok) {
+                    const errorText = await startResponse.text();
+                    // Check if error is due to no credentials - show enrollment
+                    if (errorText.includes('Failed to start authentication') || startResponse.status === 500) {
+                        btn.classList.remove('loading');
+                        btn.disabled = false;
+
+                        // Clear invalid saved account and show enrollment
+                        localStorage.removeItem('passkeyAccount');
+                        PASSKEY_ACCOUNT = '';
+                        closePaymentSheet();
+
+                        try {
+                            username = await enrollAndPay();
+                            openPaymentSheet();
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            return confirmWithPasskey();
+                        } catch (enrollError) {
+                            if (enrollError.message !== 'Enrollment cancelled') {
+                                showStatus('Failed to set up passkey: ' + enrollError.message, 'error');
+                            }
+                            return;
+                        }
+                    }
+                    throw new Error(errorText);
+                }
+
+                const options = await startResponse.json();
+
+                // Step 2: Prepare WebAuthn options
+                const publicKeyOptions = {
+                    challenge: base64urlToBuffer(options.publicKey.challenge),
+                    timeout: options.publicKey.timeout,
+                    rpId: options.publicKey.rpId,
+                    userVerification: 'required'
+                };
+
+                if (options.publicKey.allowCredentials) {
+                    publicKeyOptions.allowCredentials = options.publicKey.allowCredentials.map(cred => ({
+                        id: base64urlToBuffer(cred.id),
+                        type: cred.type,
+                        transports: cred.transports
+                    }));
+                }
+
+                // Step 3: Show biometric overlay and get credential
+                showBiometricOverlay();
+
+                let credential;
+                try {
+                    credential = await navigator.credentials.get({ publicKey: publicKeyOptions });
+                } finally {
+                    hideBiometricOverlay();
+                }
+
+                // Step 4: Send to server for verification
+                const credentialData = {
+                    id: credential.id,
+                    rawId: bufferToBase64url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+                        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+                        signature: bufferToBase64url(credential.response.signature),
+                        userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null
+                    }
+                };
+
+                const finishResponse = await fetch(`${API_BASE}/api/passkey/loginFinish?username=${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentialData)
+                });
+
+                if (!finishResponse.ok) {
+                    throw new Error(await finishResponse.text());
+                }
+
+                // Show processing state
+                btn.querySelector('.btn-content').textContent = 'Processing...';
+
+                // Fake delay to simulate payment processing
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Payment confirmed!
+                closePaymentSheet();
+
+                // Clear cart and show success
+                const itemCount = cart.length;
+                const purchasedItems = cart.map(item => item.name).join(', ');
+                cart = [];
+                renderCart();
+
+                currentUser = username;
+                showSuccessMessage(total, itemCount, purchasedItems);
+
+            } catch (error) {
+                console.error('Payment verification error:', error);
+
+                if (error.name === 'NotAllowedError') {
+                    showStatus('Payment verification was cancelled', 'error');
+                } else {
+                    showStatus('Payment failed: ' + error.message, 'error');
+                }
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                btn.querySelector('.btn-content').textContent = 'Pay with PIX';
+            }
+        }
+
+        // Check WebAuthn support
+        if (!window.PublicKeyCredential) {
+            showStatus('WebAuthn is not supported in this browser', 'error');
+            document.getElementById('payButton').disabled = true;
+        }
+
+        // Native Bottom Sheet Touch Gestures
+        (function() {
+            const sheet = document.getElementById('bottomSheet');
+            const overlay = document.getElementById('bottomSheetOverlay');
+            const handle = document.getElementById('sheetHandle');
+
+            let startY = 0;
+            let currentY = 0;
+            let sheetHeight = 0;
+            let isDragging = false;
+            let startTime = 0;
+
+            function getY(e) {
+                return e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            }
+
+            function onStart(e) {
+                if (!sheet.classList.contains('active')) return;
+
+                isDragging = true;
+                startY = getY(e);
+                currentY = 0;
+                sheetHeight = sheet.offsetHeight;
+                startTime = Date.now();
+
+                sheet.classList.remove('animating');
+                sheet.classList.add('dragging');
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+
+                const y = getY(e);
+                currentY = Math.max(0, y - startY);
+
+                // Rubber band effect when dragging up
+                if (currentY < 0) {
+                    currentY = currentY * 0.3;
+                }
+
+                // Update sheet position
+                sheet.style.transform = `translateY(${currentY}px)`;
+
+                // Update overlay opacity based on drag
+                const progress = 1 - (currentY / sheetHeight);
+                overlay.style.background = `rgba(0,0,0,${0.4 * Math.max(0, Math.min(1, progress))})`;
+            }
+
+            function onEnd(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+                sheet.classList.remove('dragging');
+                sheet.classList.add('animating');
+
+                const elapsed = Date.now() - startTime;
+                const velocity = currentY / elapsed;
+
+                // Close if dragged more than 30% or with high velocity
+                if (currentY > sheetHeight * 0.3 || velocity > 0.5) {
+                    closePaymentSheet();
+                } else {
+                    // Snap back
+                    sheet.style.transform = 'translateY(0)';
+                    overlay.style.background = '';
+                }
+
+                // Clean up inline styles after animation
+                setTimeout(() => {
+                    if (sheet.classList.contains('active')) {
+                        sheet.style.transform = '';
+                    }
+                }, 500);
+            }
+
+            // Handle area events
+            handle.addEventListener('mousedown', onStart);
+            handle.addEventListener('touchstart', onStart, { passive: true });
+
+            // Document events for move/end
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove, { passive: true });
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('touchend', onEnd);
+
+            // Update open/close functions to use animation class
+            const originalOpen = openPaymentSheet;
+            window.openPaymentSheet = function() {
+                originalOpen();
+                sheet.classList.add('animating');
+                requestAnimationFrame(() => {
+                    sheet.classList.add('active');
+                });
+            };
+
+            const originalClose = closePaymentSheet;
+            window.closePaymentSheet = function() {
+                sheet.classList.add('animating');
+                sheet.classList.remove('active');
+                sheet.style.transform = '';
+                overlay.classList.remove('active');
+                overlay.style.background = '';
+                document.body.style.overflow = '';
+            };
+        })();
+    </script>
+</body>
+</html>

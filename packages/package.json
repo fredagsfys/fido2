@@ -1,0 +1,46 @@
+{
+  "name": "@acme/payment-sdk",
+  "version": "1.0.0",
+  "description": "ACME Payment SDK with WebAuthn/FIDO2 support",
+  "main": "dist/sdk/index.js",
+  "module": "dist/sdk/index.mjs",
+  "types": "dist/sdk/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/sdk/index.mjs",
+      "require": "./dist/sdk/index.js",
+      "types": "./dist/sdk/index.d.ts"
+    },
+    "./web-component": {
+      "import": "./dist/web-component/acme-pay.mjs",
+      "require": "./dist/web-component/acme-pay.js",
+      "types": "./dist/web-component/acme-pay.d.ts"
+    },
+    "./styles": "./dist/styles/base.css"
+  },
+  "scripts": {
+    "build": "npm run build:types && npm run build:bundle",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:bundle": "rollup -c",
+    "dev": "rollup -c -w",
+    "clean": "rm -rf dist"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "payment",
+    "webauthn",
+    "fido2",
+    "passkey",
+    "pix"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-postcss": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

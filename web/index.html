@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIDO2 Passkey Demo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .header-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+        h1 {
+            margin: 0 0 8px;
+            color: #202124;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .subtitle {
+            color: #5f6368;
+            font-size: 14px;
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #202124;
+            font-size: 14px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8eaed;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #f8f9fa;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #1a73e8;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+        }
+        input[type="text"]::placeholder {
+            color: #9aa0a6;
+        }
+        .buttons {
+            display: flex;
+            gap: 12px;
+        }
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:active {
+            transform: scale(0.97);
+        }
+        button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+            color: white;
+        }
+        .btn-register:hover {
+            box-shadow: 0 4px 12px rgba(0, 168, 104, 0.3);
+        }
+        .btn-login {
+            background: #202124;
+            color: white;
+        }
+        .btn-login:hover {
+            background: #3c4043;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        button:disabled {
+            background: #dadce0;
+            color: #9aa0a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .status {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            display: none;
+            font-size: 14px;
+        }
+        .status.success {
+            display: block;
+            background: linear-gradient(135deg, rgba(50, 188, 173, 0.1) 0%, rgba(0, 168, 104, 0.1) 100%);
+            color: #00875a;
+            border: 1px solid rgba(0, 168, 104, 0.2);
+        }
+        .status.error {
+            display: block;
+            background: rgba(234, 67, 53, 0.1);
+            color: #c5221f;
+            border: 1px solid rgba(234, 67, 53, 0.2);
+        }
+        .status.info {
+            display: block;
+            background: rgba(26, 115, 232, 0.1);
+            color: #1a73e8;
+            border: 1px solid rgba(26, 115, 232, 0.2);
+        }
+        .info-card {
+            margin-top: 24px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e8eaed;
+        }
+        .info-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #202124;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-card-title svg {
+            width: 16px;
+            height: 16px;
+            fill: #5f6368;
+        }
+        .info-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .info-steps li {
+            font-size: 13px;
+            color: #5f6368;
+            padding: 6px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .step-number {
+            width: 20px;
+            height: 20px;
+            background: #e8eaed;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #5f6368;
+            flex-shrink: 0;
+        }
+        .payment-link {
+            display: block;
+            margin-top: 24px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(50, 188, 173, 0.1) 0%, rgba(0, 168, 104, 0.1) 100%);
+            border: 1px solid rgba(0, 168, 104, 0.2);
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .payment-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 168, 104, 0.15);
+        }
+        .payment-link-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #00875a;
+            margin-bottom: 4px;
+        }
+        .payment-link-subtitle {
+            font-size: 13px;
+            color: #5f6368;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+            </div>
+            <h1>FIDO2 Passkey Demo</h1>
+            <p class="subtitle">Secure passwordless authentication</p>
+        </div>
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username" autocomplete="username webauthn">
+        </div>
+
+        <div class="buttons">
+            <button class="btn-register" onclick="registerPasskey()">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Register
+            </button>
+            <button class="btn-login" onclick="loginWithPasskey()">
+                <svg viewBox="0 0 24 24"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>
+                Login
+            </button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="info-card">
+            <div class="info-card-title">
+                <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                How to test
+            </div>
+            <ol class="info-steps">
+                <li>
+                    <span class="step-number">1</span>
+                    <span>Enter a username and click "Register" to create a new passkey</span>
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    <span>Use the same username and click "Login" to authenticate</span>
+                </li>
+            </ol>
+        </div>
+
+        <a href="/payment.html" class="payment-link">
+            <div class="payment-link-title">Try Payment Demo →</div>
+            <div class="payment-link-subtitle">Test passkey-protected checkout with PIX</div>
+        </a>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function bufferToBase64url(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let str = '';
+            for (const byte of bytes) {
+                str += String.fromCharCode(byte);
+            }
+            return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+
+        function base64urlToBuffer(base64url) {
+            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            const padLen = (4 - (base64.length % 4)) % 4;
+            const padded = base64 + '='.repeat(padLen);
+            const binary = atob(padded);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        async function registerPasskey() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                showStatus('Please enter a username', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Starting registration...', 'info');
+
+                // Step 1: Get registration options from server
+                const startResponse = await fetch(`${API_BASE}/api/passkey/registerStart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!startResponse.ok) {
+                    throw new Error(await startResponse.text());
+                }
+
+                const options = await startResponse.json();
+                console.log('Registration options:', options);
+
+                // Step 2: Convert options for WebAuthn API
+                const publicKeyOptions = {
+                    challenge: base64urlToBuffer(options.publicKey.challenge),
+                    rp: options.publicKey.rp,
+                    user: {
+                        id: base64urlToBuffer(options.publicKey.user.id),
+                        name: options.publicKey.user.name,
+                        displayName: options.publicKey.user.displayName
+                    },
+                    pubKeyCredParams: options.publicKey.pubKeyCredParams,
+                    timeout: options.publicKey.timeout,
+                    attestation: options.publicKey.attestation || 'none',
+                    authenticatorSelection: options.publicKey.authenticatorSelection
+                };
+
+                if (options.publicKey.excludeCredentials) {
+                    publicKeyOptions.excludeCredentials = options.publicKey.excludeCredentials.map(cred => ({
+                        id: base64urlToBuffer(cred.id),
+                        type: cred.type,
+                        transports: cred.transports
+                    }));
+                }
+
+                showStatus('Please complete the passkey registration on your device...', 'info');
+
+                // Step 3: Create credential using WebAuthn
+                const credential = await navigator.credentials.create({ publicKey: publicKeyOptions });
+                console.log('Created credential:', credential);
+
+                // Step 4: Send credential to server
+                const credentialData = {
+                    id: credential.id,
+                    rawId: bufferToBase64url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        attestationObject: bufferToBase64url(credential.response.attestationObject),
+                        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON)
+                    }
+                };
+
+                if (credential.response.getTransports) {
+                    credentialData.response.transports = credential.response.getTransports();
+                }
+
+                const finishResponse = await fetch(`${API_BASE}/api/passkey/registerFinish?username=${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentialData)
+                });
+
+                if (!finishResponse.ok) {
+                    throw new Error(await finishResponse.text());
+                }
+
+                const result = await finishResponse.json();
+                console.log('Registration result:', result);
+                showStatus('✓ Passkey registered successfully! You can now login.', 'success');
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                if (error.name === 'NotAllowedError') {
+                    showStatus('Registration was cancelled or not allowed', 'error');
+                } else {
+                    showStatus('Registration failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function loginWithPasskey() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                showStatus('Please enter a username', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Starting authentication...', 'info');
+
+                // Step 1: Get authentication options from server
+                const startResponse = await fetch(`${API_BASE}/api/passkey/loginStart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!startResponse.ok) {
+                    throw new Error(await startResponse.text());
+                }
+
+                const options = await startResponse.json();
+                console.log('Authentication options:', options);
+
+                // Step 2: Convert options for WebAuthn API
+                const publicKeyOptions = {
+                    challenge: base64urlToBuffer(options.publicKey.challenge),
+                    timeout: options.publicKey.timeout,
+                    rpId: options.publicKey.rpId,
+                    userVerification: options.publicKey.userVerification || 'preferred'
+                };
+
+                if (options.publicKey.allowCredentials) {
+                    publicKeyOptions.allowCredentials = options.publicKey.allowCredentials.map(cred => ({
+                        id: base64urlToBuffer(cred.id),
+                        type: cred.type,
+                        transports: cred.transports
+                    }));
+                }
+
+                showStatus('Please verify your identity using your passkey...', 'info');
+
+                // Step 3: Get credential using WebAuthn
+                const credential = await navigator.credentials.get({ publicKey: publicKeyOptions });
+                console.log('Got credential:', credential);
+
+                // Step 4: Send credential to server
+                const credentialData = {
+                    id: credential.id,
+                    rawId: bufferToBase64url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+                        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+                        signature: bufferToBase64url(credential.response.signature),
+                        userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null
+                    }
+                };
+
+                const finishResponse = await fetch(`${API_BASE}/api/passkey/loginFinish?username=${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentialData)
+                });
+
+                if (!finishResponse.ok) {
+                    throw new Error(await finishResponse.text());
+                }
+
+                const result = await finishResponse.json();
+                console.log('Authentication result:', result);
+                showStatus('✓ Login successful! Welcome back, ' + username, 'success');
+
+            } catch (error) {
+                console.error('Authentication error:', error);
+                if (error.name === 'NotAllowedError') {
+                    showStatus('Authentication was cancelled or not allowed', 'error');
+                } else {
+                    showStatus('Login failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Check if WebAuthn is supported
+        if (!window.PublicKeyCredential) {
+            showStatus('WebAuthn is not supported in this browser', 'error');
+            document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        }
+    </script>
+</body>
+</html>

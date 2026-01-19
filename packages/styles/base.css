@@ -1,0 +1,676 @@
+/**
+ * ACME Payment SDK - Base Styles
+ * All classes prefixed with 'acme-' for namespace isolation
+ */
+
+/* ============================================================================
+   CSS Custom Properties (Theme Variables)
+   ============================================================================ */
+
+:root {
+  --acme-primary-color: #32BCAD;
+  --acme-primary-gradient: linear-gradient(135deg, #32BCAD 0%, #00A868 100%);
+  --acme-accent-color: #1a73e8;
+  --acme-error-color: #ea4335;
+  --acme-success-color: #00A868;
+  --acme-text-primary: #202124;
+  --acme-text-secondary: #5f6368;
+  --acme-text-muted: #9aa0a6;
+  --acme-border-color: #e8eaed;
+  --acme-background: #ffffff;
+  --acme-overlay-bg: rgba(0, 0, 0, 0.4);
+  --acme-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --acme-border-radius: 12px;
+  --acme-border-radius-lg: 14px;
+  --acme-transition-duration: 0.3s;
+  --acme-transition-easing: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ============================================================================
+   Bottom Sheet Styles
+   ============================================================================ */
+
+.acme-bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  z-index: 1000;
+  pointer-events: none;
+  transition: background 0.4s var(--acme-transition-easing);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+.acme-bottom-sheet-overlay.active {
+  background: var(--acme-overlay-bg);
+  pointer-events: auto;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.acme-bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--acme-background);
+  border-radius: var(--acme-border-radius-lg) var(--acme-border-radius-lg) 0 0;
+  z-index: 1001;
+  transform: translateY(100%);
+  max-height: 94vh;
+  overflow: hidden;
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05), 0 -8px 32px rgba(0, 0, 0, 0.12);
+  will-change: transform;
+  touch-action: none;
+}
+
+.acme-bottom-sheet.animating {
+  transition: transform 0.5s var(--acme-transition-easing);
+}
+
+.acme-bottom-sheet.active {
+  transform: translateY(0);
+}
+
+.acme-bottom-sheet-handle-area {
+  padding: 12px 0 8px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.acme-bottom-sheet-handle-area:active {
+  cursor: grabbing;
+}
+
+.acme-bottom-sheet-handle {
+  width: 36px;
+  height: 5px;
+  background: rgba(60, 60, 67, 0.3);
+  border-radius: 100px;
+  margin: 0 auto;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.acme-bottom-sheet.dragging .acme-bottom-sheet-handle {
+  transform: scaleX(1.2);
+  background: rgba(60, 60, 67, 0.5);
+}
+
+.acme-bottom-sheet-scroll {
+  max-height: calc(94vh - 30px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.acme-bottom-sheet-content {
+  padding: 0 16px 34px;
+}
+
+/* ============================================================================
+   Payment Sheet Header
+   ============================================================================ */
+
+.acme-sheet-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 16px 8px;
+}
+
+.acme-sheet-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  margin: -8px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acme-sheet-close:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.acme-sheet-logo {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.acme-sheet-logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--acme-primary-color);
+  letter-spacing: -0.5px;
+}
+
+.acme-sheet-logo-sub {
+  font-size: 14px;
+  color: var(--acme-text-secondary);
+  font-weight: 500;
+}
+
+.acme-sheet-spacer {
+  width: 40px;
+}
+
+/* ============================================================================
+   Payment Amount Display
+   ============================================================================ */
+
+.acme-payment-amount {
+  text-align: center;
+  padding: 16px 16px 24px;
+}
+
+.acme-currency {
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--acme-text-primary);
+  vertical-align: top;
+}
+
+.acme-amount-value {
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--acme-text-primary);
+  letter-spacing: -1px;
+}
+
+.acme-merchant-name {
+  text-align: center;
+  font-size: 14px;
+  color: var(--acme-text-secondary);
+  padding-bottom: 24px;
+}
+
+/* ============================================================================
+   Payment Methods Selection
+   ============================================================================ */
+
+.acme-payment-methods {
+  margin: 0 16px 16px;
+}
+
+.acme-payment-method {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--acme-background);
+  border: 2px solid var(--acme-border-color);
+  border-radius: var(--acme-border-radius);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.acme-payment-method:hover {
+  background: #f8f9fa;
+}
+
+.acme-payment-method.selected {
+  border-color: var(--acme-accent-color);
+  background: #e8f0fe;
+}
+
+.acme-payment-method.primary {
+  border: 2px solid var(--acme-primary-color);
+  background: linear-gradient(135deg, rgba(50, 188, 173, 0.08) 0%, rgba(0, 168, 104, 0.08) 100%);
+  margin-bottom: 16px;
+}
+
+.acme-payment-method.primary.selected {
+  border-color: var(--acme-success-color);
+  background: linear-gradient(135deg, rgba(50, 188, 173, 0.15) 0%, rgba(0, 168, 104, 0.15) 100%);
+}
+
+.acme-payment-method-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 20px;
+}
+
+.acme-payment-method-icon.pix {
+  background: var(--acme-primary-gradient);
+}
+
+.acme-payment-method-icon.card {
+  background: linear-gradient(135deg, #5C6BC0 0%, #3949AB 100%);
+}
+
+.acme-payment-method-icon.klarna {
+  background: #FFB3C7;
+}
+
+.acme-klarna-logo {
+  font-weight: 800;
+  font-size: 16px;
+  color: #0A0B09;
+}
+
+.acme-payment-method-info {
+  flex: 1;
+}
+
+.acme-payment-method-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--acme-text-primary);
+}
+
+.acme-payment-method-detail {
+  font-size: 13px;
+  color: var(--acme-text-secondary);
+  margin-top: 2px;
+}
+
+.acme-payment-method-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  background: var(--acme-success-color);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.acme-payment-method-balance-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  background: rgba(0, 168, 104, 0.1);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.acme-balance-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--acme-success-color);
+  border-radius: 50%;
+  animation: acme-pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes acme-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.acme-balance-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00875a;
+}
+
+.acme-payment-method-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #dadce0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+}
+
+.acme-payment-method.selected .acme-payment-method-radio {
+  border-color: var(--acme-accent-color);
+}
+
+.acme-payment-method.primary .acme-payment-method-radio {
+  border-color: var(--acme-primary-color);
+}
+
+.acme-payment-method.primary.selected .acme-payment-method-radio {
+  border-color: var(--acme-success-color);
+}
+
+.acme-payment-method-radio-inner {
+  width: 10px;
+  height: 10px;
+  background: var(--acme-accent-color);
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.2s;
+}
+
+.acme-payment-method.selected .acme-payment-method-radio-inner {
+  transform: scale(1);
+}
+
+.acme-payment-method.primary .acme-payment-method-radio-inner {
+  background: var(--acme-success-color);
+}
+
+.acme-other-methods-divider {
+  display: flex;
+  align-items: center;
+  margin: 8px 0 12px;
+  color: var(--acme-text-muted);
+  font-size: 12px;
+}
+
+.acme-other-methods-divider::before,
+.acme-other-methods-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--acme-border-color);
+}
+
+.acme-other-methods-divider span {
+  padding: 0 12px;
+}
+
+/* ============================================================================
+   Pay Button
+   ============================================================================ */
+
+.acme-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: calc(100% - 32px);
+  margin: 8px 16px 16px;
+  padding: 14px 24px;
+  background: var(--acme-accent-color);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  font-family: var(--acme-font-family);
+}
+
+.acme-pay-btn:hover {
+  background: #1557b0;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.acme-pay-btn:active {
+  background: #104a9e;
+}
+
+.acme-pay-btn:disabled {
+  background: #c7c7cc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.acme-pay-btn .acme-spinner {
+  display: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: acme-spin 0.8s linear infinite;
+}
+
+.acme-pay-btn.loading .acme-spinner {
+  display: block;
+}
+
+.acme-pay-btn.loading .acme-btn-content {
+  display: none;
+}
+
+@keyframes acme-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+   Biometric Overlay
+   ============================================================================ */
+
+.acme-biometric-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity var(--acme-transition-duration) ease;
+}
+
+.acme-biometric-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.acme-biometric-container {
+  text-align: center;
+  color: white;
+}
+
+.acme-biometric-icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  position: relative;
+}
+
+.acme-fingerprint-svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: white;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.acme-fingerprint-svg path {
+  opacity: 0.3;
+}
+
+.acme-fingerprint-svg .acme-scan-line {
+  stroke: var(--acme-primary-color);
+  stroke-width: 3;
+  opacity: 1;
+  animation: acme-fingerprint-scan 2s ease-in-out infinite;
+}
+
+@keyframes acme-fingerprint-scan {
+  0%, 100% {
+    stroke-dasharray: 0 1000;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 200 1000;
+    stroke-dashoffset: -100;
+  }
+}
+
+.acme-biometric-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 140px;
+  margin: -70px 0 0 -70px;
+  border: 3px solid rgba(50, 188, 173, 0.3);
+  border-radius: 50%;
+  animation: acme-biometric-pulse 2s ease-out infinite;
+}
+
+.acme-biometric-ring:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.acme-biometric-ring:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes acme-biometric-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.acme-biometric-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.acme-biometric-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 32px;
+}
+
+.acme-biometric-hint {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.acme-biometric-hint svg {
+  width: 20px;
+  height: 20px;
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+.acme-biometric-cancel {
+  margin-top: 40px;
+  padding: 12px 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: var(--acme-font-family);
+}
+
+.acme-biometric-cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Success state */
+.acme-biometric-icon.success .acme-fingerprint-svg {
+  stroke: var(--acme-success-color);
+}
+
+.acme-biometric-icon.success .acme-fingerprint-svg path {
+  opacity: 1;
+}
+
+.acme-biometric-icon.success .acme-biometric-ring {
+  border-color: var(--acme-success-color);
+}
+
+/* Error state */
+.acme-biometric-icon.error .acme-fingerprint-svg {
+  stroke: var(--acme-error-color);
+}
+
+.acme-biometric-icon.error .acme-fingerprint-svg path {
+  opacity: 1;
+}
+
+.acme-biometric-icon.error .acme-biometric-ring {
+  border-color: var(--acme-error-color);
+}
+
+/* ============================================================================
+   Order Items Display
+   ============================================================================ */
+
+.acme-order-items {
+  margin: 0 16px 16px;
+  border: 1px solid var(--acme-border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.acme-order-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--acme-border-color);
+  font-size: 14px;
+}
+
+.acme-order-item:last-child {
+  border-bottom: none;
+}
+
+.acme-order-item-name {
+  color: var(--acme-text-primary);
+}
+
+.acme-order-item-price {
+  color: var(--acme-text-secondary);
+}
+
+/* ============================================================================
+   Footer
+   ============================================================================ */
+
+.acme-sheet-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px 24px;
+  font-size: 12px;
+  color: var(--acme-text-secondary);
+}
+
+/* ============================================================================
+   Mobile Optimizations
+   ============================================================================ */
+
+@media (max-width: 600px) {
+  .acme-bottom-sheet {
+    max-height: 95vh;
+  }
+
+  .acme-amount-value {
+    font-size: 40px;
+  }
+
+  .acme-pay-btn {
+    width: calc(100% - 24px);
+    margin: 8px 12px 16px;
+  }
+}
