@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <!-- Handle bar -->
+        <View
+            android:id="@+id/handle"
+            android:layout_width="32dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_handle" />
+
+        <!-- Header -->
+        <LinearLayout
+            android:id="@+id/headerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:id="@+id/merchantName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pay merchant"
+                android:textColor="@color/gpay_text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/totalAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="R$ 0,00"
+                android:textColor="@color/gpay_text_primary"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+        <!-- Featured payment method (PIX) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/featuredPaymentMethod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_featured_payment"
+                android:padding="20dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/featuredIcon"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_pix"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/featuredRadio"
+                    app:layout_constraintStart_toEndOf="@id/featuredIcon"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/featuredName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pix"
+                        android:textColor="@color/gpay_text_primary"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/featuredDetails"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="by Acme Pay • Instant"
+                        android:textColor="@color/gpay_text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/featuredBalance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="R$ 1.250,00 available"
+                        android:textColor="@color/pix_teal"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/featuredRadio"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_radio_checked"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+        <!-- Alternative payment methods section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Other payment methods"
+                android:textColor="@color/gpay_text_tertiary"
+                android:textSize="12sp"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Alternative methods list (smaller) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/paymentMethodsList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+
+        <!-- Pay button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/payButton"
+            style="@style/Widget.AcmePay.Button.Pay"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="24dp"
+            android:text="Pay with Pix"
+            app:icon="@drawable/ic_fingerprint"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp" />
+
+        <!-- Powered by -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:text="@string/powered_by_acme"
+            android:textColor="@color/gpay_text_tertiary"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

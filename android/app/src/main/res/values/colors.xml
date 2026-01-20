@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Google Pay inspired colors -->
+    <color name="gpay_background">#FFFFFF</color>
+    <color name="gpay_surface">#F8F9FA</color>
+    <color name="gpay_primary">#1A73E8</color>
+    <color name="gpay_primary_dark">#1557B0</color>
+    <color name="gpay_on_primary">#FFFFFF</color>
+    <color name="gpay_text_primary">#202124</color>
+    <color name="gpay_text_secondary">#5F6368</color>
+    <color name="gpay_text_tertiary">#80868B</color>
+    <color name="gpay_divider">#DADCE0</color>
+    <color name="gpay_card_border">#E8EAED</color>
+    <color name="gpay_success">#34A853</color>
+    <color name="gpay_error">#EA4335</color>
+    <color name="gpay_scrim">#40000000</color>
+
+    <!-- Payment method colors -->
+    <color name="visa_blue">#1A1F71</color>
+    <color name="mastercard_red">#EB001B</color>
+    <color name="pix_teal">#32BCAD</color>
+    <color name="klarna_pink">#FFB3C7</color>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Acme Pay</string>
+    <string name="payment_title">Pay with Acme</string>
+    <string name="select_payment_method">Select payment method</string>
+    <string name="confirm_payment">Confirm payment</string>
+    <string name="cancel">Cancel</string>
+    <string name="pay_now">Pay now</string>
+    <string name="authenticating">Authenticating…</string>
+    <string name="payment_successful">Payment successful</string>
+    <string name="payment_failed">Payment failed</string>
+    <string name="biometric_prompt_title">Confirm payment</string>
+    <string name="biometric_prompt_subtitle">Use your fingerprint or face to pay</string>
+    <string name="biometric_prompt_negative">Cancel</string>
+    <string name="card_ending">•••• %s</string>
+    <string name="add_payment_method">Add payment method</string>
+    <string name="powered_by_acme">Powered by Acme Pay</string>
+</resources>
